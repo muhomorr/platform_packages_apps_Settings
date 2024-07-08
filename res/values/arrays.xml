@@ -1528,4 +1528,6 @@
     <string-array name="display_over_apps_permission_change_exempt" translatable="false">
     </string-array>
 
+    <string-array name="fingerprint_acquired_vendor" />
+
 </resources>
