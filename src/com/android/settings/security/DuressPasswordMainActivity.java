@@ -42,21 +42,11 @@ public class DuressPasswordMainActivity extends DuressPasswordActivity implement
         if (savedInstanceState != null) {
             userCredential = savedInstanceState.getParcelable(KEY_USER_CREDENTIAL, LockscreenCredential.class);
         }
-
-        if (userCredential == null) {
-            userCredential = LockscreenCredential.createNone();
-
-            var b = new ChooseLockSettingsHelper.Builder(this);
-            b.setRequestCode(REQ_CODE_OBTAIN_USER_CREDENTIALS);
-            b.setReturnCredentials(true);
-            b.setForegroundOnly(true);
-            b.show();
-        }
     }
 
     @Override
     protected boolean hasUserCredential() {
-        return !userCredential.isNone();
+        return userCredential != null && !userCredential.isNone();
     }
 
     @Override
@@ -68,13 +58,31 @@ public class DuressPasswordMainActivity extends DuressPasswordActivity implement
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (userCredential == null) {
+            if (!getLockPatternUtils().isSecure(getUserId())) {
+                userCredential = LockscreenCredential.createNone();
+            } else {
+                var b = new ChooseLockSettingsHelper.Builder(this);
+                b.setRequestCode(REQ_CODE_OBTAIN_USER_CREDENTIALS);
+                b.setReturnCredentials(true);
+                b.setForegroundOnly(true);
+                b.show();
+            }
+        }
+
         updateActionList();
     }
 
     private void updateActionList() {
+        if (userCredential == null) {
+            Log.d(TAG, "no userCredential, skipping updateActionList");
+            return;
+        }
+
         var g = new ItemGroup();
 
-        if (getLockPatternUtils().hasDuressCredentials()) {
+        if (getLockPatternUtils().hasDuressCredentials(userCredential)) {
             g.addChild(createItem(R.string.duress_pwd_action_update, R.drawable.ic_edit));
             g.addChild(createItem(R.string.duress_pwd_action_delete, R.drawable.ic_delete));
         } else {
@@ -145,7 +153,7 @@ public class DuressPasswordMainActivity extends DuressPasswordActivity implement
             throw new IllegalStateException(Integer.toString(resultCode));
         }
 
-        Log.d(TAG, "onActivityResult");
+        Log.d(TAG, "onActivityResult, requestCode: " + requestCode + ", resultCode: " + resultCode);
 
         if (resultCode != RESULT_OK) {
             finish();
