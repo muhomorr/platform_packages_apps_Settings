@@ -42,6 +42,13 @@ class AppStorageDynCodeLoadingFragment : AswExploitProtectionFragment<AswRestric
 
     override fun getTitle() = getText(R.string.aep_storage_dcl_short)
 
+    override fun getSummaryForDefaultValueReason(dvr: Int): CharSequence? {
+        if (dvr == AppSwitch.DVR_DEFAULT_SETTING) {
+            return ""
+        }
+        return super.getSummaryForDefaultValueReason(dvr)
+    }
+
     override fun getSummaryForImmutabilityReason(ir: Int): CharSequence? {
         val id = when (ir) {
             AppSwitch.IR_IS_SYSTEM_APP -> R.string.aep_storage_dcl_dvr_is_system_app
