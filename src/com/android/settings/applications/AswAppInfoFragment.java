@@ -84,12 +84,19 @@ public abstract class AswAppInfoFragment<T extends AppSwitch>
             CharSequence summary = getSummaryForDefaultValueReason(dvr);
             if (summary == null) {
                 summary = switch (dvr) {
-                    case AppSwitch.DVR_DEFAULT_SETTING ->
-                        getString(R.string.aep_dvr_default_security_setting,
+                    case AppSwitch.DVR_DEFAULT_SETTING -> {
+                        if (!ctx.getUser().isSystem()) {
+                            yield null;
+                        }
+                        yield getString(R.string.aep_dvr_default_security_setting,
                                 getAppDefaultSettingPathForCategory(adapter.getCategory()));
+                    }
                     case AppSwitch.DVR_APP_COMPAT_CONFIG_HARDENING_OPT_IN ->
                         getText(R.string.aep_dvr_compat_config_hardening_opt_in);
                     case AppSwitch.DVR_APP_COMPAT_CONFIG_HARDENING_OPT_OUT -> {
+                        if (!ctx.getUser().isSystem()) {
+                            yield null;
+                        }
                         var s = defaultValue ? adapter.getOnTitle(ctx) : adapter.getOffTitle(ctx);
                         yield getString(R.string.aep_dvr_compat_config_hardening_opt_out,
                                 s.toString(), getSettingPath(R.string.safety_center_title,
